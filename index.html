@@ -883,13 +883,13 @@ async function downloadPdfPromise(index){
           clonedLogo.style.display = "block";
         }
         
-        // === INI KOD BARU YANG DITAMBAH ===
-        // Cari butang 'Edit Ulasan' dalam klon dan sembunyikannya
+        // === PERUBAHAN DI SINI: Guna .remove() ===
+        // Cari butang 'Edit Ulasan' dalam klon dan PADAMKANNYA
         const clonedEditButton = clonedDoc.querySelector('.ulasan-edit-btn');
         if (clonedEditButton) {
-          clonedEditButton.style.display = 'none';
+          clonedEditButton.remove(); // Lebih kuat daripada 'display:none'
         }
-        // === TAMAT KOD BARU ===
+        // === TAMAT PERUBAHAN ===
       }
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -935,4 +935,5 @@ loadDataFromServer();
 </script>
 </body>
 </html>
+
 

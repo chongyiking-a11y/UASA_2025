@@ -849,43 +849,52 @@ function loadImage(src) {
   });
 }
 async function downloadPdfPromise(index){
-  const kls = DATA[kelasIdx];
-  if (!kls || !kls.murid[index]) {
-      alert("Gagal jana PDF: Data murid tidak ditemui.");
-      return;
-  }
-  muridIdx = index;
-  renderSlip();
-  const logoEl = document.getElementById('logo');
-  if (logoEl.src && logoEl.src.trim() !== "") {
-    try {
-      await loadImage(logoEl.src);
-    } catch (e) {
-      console.warn("Logo tidak dapat dimuat, meneruskan tanpa logo");
-    }
-  }
+  const kls = DATA[kelasIdx];
+  if (!kls || !kls.murid[index]) {
+      alert("Gagal jana PDF: Data murid tidak ditemui.");
+      return;
+  }
+  muridIdx = index;
+  renderSlip();
+  const logoEl = document.getElementById('logo');
+  if (logoEl.src && logoEl.src.trim() !== "") {
+    try {
+      await loadImage(logoEl.src);
+    } catch (e) {
+      console.warn("Logo tidak dapat dimuat, meneruskan tanpa logo");
+    }
+  }
 
-  const element = document.getElementById('slip');
-  const namePart = sanitizeFilename(DATA[kelasIdx].murid[muridIdx].name).toUpperCase();
-  const filename = `${namePart}-UPSA2025.pdf`;
-  const opt = {
-    margin: [10, 10, 10, 10],
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { 
-      scale: 2, 
-      useCORS: true, 
-      logging: false,
-      onclone: function(clonedDoc) {
-        const clonedLogo = clonedDoc.getElementById('logo');
-        if (clonedLogo && logoEl.src && logoEl.src.trim() !== "") {
-          clonedLogo.style.display = "block";
-        }
-      }
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  return html2pdf().set(opt).from(element).save();
+  const element = document.getElementById('slip');
+  const namePart = sanitizeFilename(DATA[kelasIdx].murid[muridIdx].name).toUpperCase();
+  const filename = `${namePart}-UPSA2025.pdf`;
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true, 
+      logging: false,
+      onclone: function(clonedDoc) {
+        // Paparkan logo dalam klon
+        const clonedLogo = clonedDoc.getElementById('logo');
+        if (clonedLogo && logoEl.src && logoEl.src.trim() !== "") {
+          clonedLogo.style.display = "block";
+        }
+        
+        // === INI KOD BARU YANG DITAMBAH ===
+        // Cari butang 'Edit Ulasan' dalam klon dan sembunyikannya
+        const clonedEditButton = clonedDoc.querySelector('.ulasan-edit-btn');
+        if (clonedEditButton) {
+          clonedEditButton.style.display = 'none';
+        }
+        // === TAMAT KOD BARU ===
+      }
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  return html2pdf().set(opt).from(element).save();
 }
 
 function downloadPdf(){
@@ -926,3 +935,4 @@ loadDataFromServer();
 </script>
 </body>
 </html>
+

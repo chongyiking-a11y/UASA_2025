@@ -868,33 +868,56 @@ async function downloadPdfPromise(index){
   const element = document.getElementById('slip');
   const namePart = sanitizeFilename(DATA[kelasIdx].murid[muridIdx].name).toUpperCase();
   const filename = `${namePart}-UPSA2025.pdf`;
+
+  // === PERUBAHAN BERMULA DI SINI ===
+  
+  // 1. Cari butang "Edit Ulasan" yang sebenar
+  const editButton = element.querySelector('.ulasan-edit-btn');
+  
+  // 2. Sembunyikan ia di halaman SEBELUM ambil gambar PDF
+  if (editButton) {
+    editButton.style.display = 'none';
+  }
+
   const opt = {
     margin: [10, 10, 10, 10],
     filename: filename,
     image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { 
-      scale: 2, 
-      useCORS: true, 
-      logging: false,
-      onclone: function(clonedDoc) {
-        // Paparkan logo dalam klon
-        const clonedLogo = clonedDoc.getElementById('logo');
-        if (clonedLogo && logoEl.src && logoEl.src.trim() !== "") {
-          clonedLogo.style.display = "block";
-        }
-        
-        // === PERUBAHAN DI SINI: Guna .remove() ===
-        // Cari butang 'Edit Ulasan' dalam klon dan PADAMKANNYA
-        const clonedEditButton = clonedDoc.querySelector('.ulasan-edit-btn');
-        if (clonedEditButton) {
-          clonedEditButton.remove(); // Lebih kuat daripada 'display:none'
-        }
-        // === TAMAT PERUBAHAN ===
-      }
-    },
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true, 
+      logging: false,
+      onclone: function(clonedDoc) {
+        // Kita masih perlukan ini untuk logo
+        const clonedLogo = clonedDoc.getElementById('logo');
+        if (clonedLogo && logoEl.src && logoEl.src.trim() !== "") {
+          clonedLogo.style.display = "block";
+        }
+      }
+    },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  return html2pdf().set(opt).from(element).save();
+
+  // 3. Janakan PDF (ia akan klon slip tanpa butang)
+  const pdfPromise = html2pdf().set(opt).from(element).save();
+
+  // 4. (PENTING) Selepas PDF selesai, tunjukkan semula butang
+  pdfPromise.then(() => {
+    if (editButton) {
+      editButton.style.display = ''; // Reset stail (tunjukkan semula)
+    }
+  }).catch((err) => {
+    // Tunjukkan semula butang walaupun PDF gagal
+    if (editButton) {
+      editButton.style.display = '';
+    }
+    console.error("Gagal jana PDF:", err);
+    // Biarkan fungsi 'downloadPdf' yang tangani 'alert'
+    throw err; 
+  });
+
+  return pdfPromise;
+  // === PERUBAHAN TAMAT DI SINI ===
 }
 
 function downloadPdf(){
@@ -935,5 +958,6 @@ loadDataFromServer();
 </script>
 </body>
 </html>
+
 
 
